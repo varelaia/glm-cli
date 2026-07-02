@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# glmf — Claude Code on Z.ai GLM-5-turbo (fast, thinking disabled).
+#
+# Faster and cheaper per turn than glm for lookups, edits, one-shot tasks.
+# Same scoped-env-var approach as glm: your default `claude` is untouched.
+set -euo pipefail
+
+KEY_FILE="${HOME}/.zai_api_key"
+ZAI_KEY="$(cat "$KEY_FILE" 2>/dev/null || true)"
+if [ -z "$ZAI_KEY" ]; then
+  echo "❌ No Z.ai API key at ${KEY_FILE}. Run install.sh first." >&2
+  exit 1
+fi
+
+ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
+ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
+ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5-turbo" \
+ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5-turbo" \
+ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5-turbo" \
+MAX_THINKING_TOKENS="0" \
+API_TIMEOUT_MS="3000000" \
+exec claude "$@"

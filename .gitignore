@@ -1,0 +1,17 @@
+# Secrets — NEVER commit
+.zai_api_key
+*.key
+.env
+.env.*
+
+# Local telemetry (if you adopt glm-metrics later)
+glm-metrics/
+*.csv
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/

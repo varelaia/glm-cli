@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# glm — Claude Code on Z.ai GLM-5.2 (1M-token context, thinking ON).
+#
+# The ANTHROPIC_* exports below are scoped to THIS invocation only, so your
+# default `claude` command (Anthropic / Max plan) is never modified. Think of
+# glm as: "claude, but routed to Z.ai GLM-5.2 for this one run."
+#
+# Rollback: rm -f ~/.zai_api_key ~/.local/bin/glm ~/.local/bin/glmf
+set -euo pipefail
+
+KEY_FILE="${HOME}/.zai_api_key"
+ZAI_KEY="$(cat "$KEY_FILE" 2>/dev/null || true)"
+if [ -z "$ZAI_KEY" ]; then
+  echo "❌ No Z.ai API key at ${KEY_FILE}." >&2
+  echo "   Create one at https://z.ai/manage-apikey and re-run install.sh" >&2
+  echo "   (or: ZAI_API_KEY=<key> bash install.sh)." >&2
+  exit 1
+fi
+
+ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
+ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
+ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
+ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2[1m]" \
+ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air" \
+CLAUDE_CODE_AUTO_COMPACT_WINDOW="1000000" \
+API_TIMEOUT_MS="3000000" \
+exec claude "$@"
