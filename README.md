@@ -19,16 +19,21 @@
 ## Quick start
 
 ```bash
-git clone https://github.com/varelaia/glm-cli
-cd glm-cli
-bash install.sh
+curl -fsSL https://raw.githubusercontent.com/varelaia/glm-cli/main/install.sh | bash
 ```
+
+> **Heads-up — `curl | bash` runs a remote script you haven't read** (the same trade-off Antigravity's own installer makes). If you'd rather audit it first, clone and read `install.sh`, then run it:
+>
+> ```bash
+> git clone https://github.com/varelaia/glm-cli
+> cd glm-cli && bash install.sh
+> ```
 
 The installer is **idempotent** and does five things:
 
 1. Installs Claude Code via the official native installer (skipped if already present).
 2. Ensures `~/.local/bin` is on your `PATH`.
-3. Copies `glm` and `glmf` into `~/.local/bin` (executable).
+3. Installs `glm` and `glmf` into `~/.local/bin` (executable) — read from the local `./bin` if you cloned, otherwise fetched from the repo.
 4. Asks for your Z.ai API key and stores it at `~/.zai_api_key` (`chmod 600`). It accepts the key from an interactive prompt, or non-interactively from the `ZAI_API_KEY` environment variable.
 5. Verifies end-to-end against `https://api.z.ai/api/anthropic` (a real `glm-5.2` call expecting HTTP 200).
 
