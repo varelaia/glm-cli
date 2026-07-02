@@ -10,6 +10,22 @@
 | `glmf`  | `glm-5-turbo` (*thinking* OFF) | Tareas rápidas — edits, *lookups*, un solo prompt |
 | `claude`| *(sin cambios)* | Tu *default* — Anthropic / Max |
 
+## 💡 El diferenciador: API key + tarifa plana
+
+Z.ai te da una **API key** (estándar *Anthropic-compatible*) con **tarifa plana mensual** (Lite $18 / Pro $72 / Max $160) — portable a *cualquier* cliente, incluido este Claude Code.
+
+**Claude y Codex no ofrecen eso.** Ambos tienen planes de tarifa plana (Claude Max, ChatGPT/Codex), pero **atados a su propio CLI o web**. Si quieres su modelo vía **API key** en otro cliente, es estrictamente **pago por token**: la API de Anthropic y de OpenAI no tienen plan *flat-rate*.
+
+| Proveedor | Tarifa plana en su propio CLI | **API key** + tarifa plana |
+|---|:---:|:---:|
+| **Z.ai (GLM)** | ✓ | ✓ — portátil a cualquier cliente |
+| **Claude (Anthropic)** | ✓ (Pro / Max) | ✗ — la API es solo pago por token |
+| **Codex (OpenAI)** | ✓ (ChatGPT) | ✗ — la API es solo pago por token |
+
+→ Por eso existe `glm-cli`: correr **Claude Code** (skills, agentes, MCP — todo el UX) sobre **GLM-5.2 a tarifa plana**, usando una API key de Z.ai.
+
+> *Nota honesta: Z.ai tiene límites de uso por plan (Pro ~400 prompts/5 h, Max ~1600/5 h) — tarifa plana, **no** uso ilimitado.*
+
 ## ✅ Plataformas soportadas
 
 **No funciona en todos los sistemas.** Depende de dos cosas: que tu SO corra `bash` + `curl`, y que el **instalador nativo de Claude** (que este script invoca) lo soporte. Matriz real, verificada contra el código de ambos instaladores:
