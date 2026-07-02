@@ -1,54 +1,70 @@
 # glm-cli
 
-> Run **Claude Code** on **Z.ai GLM-5.2** — a 1M-context coding model — without touching your default `claude` setup.
+> Ejecuta **Claude Code** sobre **Z.ai GLM-5.2** — un modelo de código con contexto de 1M — sin tocar tu `claude` por defecto.
 
-`glm` and `glmf` are two thin wrappers that launch the real Claude Code binary with environment variables scoped to that single invocation, pointing it at the Z.ai Anthropic-compatible endpoint. Your default `claude` command (Anthropic API / Max plan) is **never modified** — no global `settings.json` is touched, so the two worlds coexist cleanly in the same shell.
+`glm` y `glmf` son dos *wrappers* livianos que lanzan el binario real de Claude Code con variables de entorno acotadas a esa única invocación, apuntándolo al endpoint *Anthropic-compatible* de Z.ai. Tu comando `claude` (API Anthropic / plan Max) **nunca se modifica**: no se toca el `settings.json` global, así que ambos mundos coexisten en la misma shell.
 
-| Command | Model | When |
-|---------|-------|------|
-| `glm`   | `glm-5.2[1m]` (1M ctx, thinking ON) | Heavy work — debugging, multi-step tasks, long context |
-| `glmf`  | `glm-5-turbo` (thinking OFF) | Quick tasks — edits, lookups, one-shot prompts |
-| `claude`| *(unchanged)* | Still your default — Anthropic / Max |
+| Comando | Modelo | Cuándo |
+|---------|-------|--------|
+| `glm`   | `glm-5.2[1m]` (ctx 1M, *thinking* ON) | Trabajo duro — debug, multi-paso, contexto largo |
+| `glmf`  | `glm-5-turbo` (*thinking* OFF) | Tareas rápidas — edits, *lookups*, un solo prompt |
+| `claude`| *(sin cambios)* | Tu *default* — Anthropic / Max |
 
-## Requirements
+## ✅ Plataformas soportadas
 
-- macOS or Linux (the Claude Code native installer covers both)
-- `curl`
-- A Z.ai API key (see below)
+**No funciona en todos los sistemas.** Depende de dos cosas: que tu SO corra `bash` + `curl`, y que el **instalador nativo de Claude** (que este script invoca) lo soporte. Matriz real, verificada contra el código de ambos instaladores:
 
-## Quick start
+| Sistema | ¿Funciona? | Notas |
+|---------|:----------:|-------|
+| **Linux** (cualquier distro con bash) | ✅ | Nativo |
+| **macOS** | ✅ | bash 3.2 y zsh soportados; detecta tu *shell* y escribe el `rc` correcto |
+| **Windows vía WSL** (Ubuntu, etc.) | ✅ | Dentro de WSL es Linux → funciona igual |
+| **Windows nativo** (PowerShell / cmd) | ❌ | Este script es bash. Necesitas WSL, o un port a `.ps1`/`.cmd` (no incluido) |
+| **Git Bash / MSYS2 / Cygwin** (en Windows) | ❌ | El instalador nativo de Claude **los rechaza**: `Windows is not supported by this script` |
+
+> **¿Usas Windows nativo?** La forma soportada de usar glm-cli es **WSL**. Si lo necesitas en PowerShell nativo (*wrappers* `.cmd`/`.ps1`), abre un issue — es un port separado que no está incluido aquí.
+
+## Requisitos
+
+- **bash** + **curl** (vienen en toda distro Linux y en macOS).
+- Una **API key de Z.ai** (ver más abajo).
+- Conexión a internet (la 1ª vez se descargan Claude Code y los *wrappers*).
+
+## ⚡ Instalación rápida
+
+**Linux / macOS / WSL** — un solo comando:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/varelaia/glm-cli/main/install.sh | bash
 ```
 
-> **Heads-up — `curl | bash` runs a remote script you haven't read** (the same trade-off Antigravity's own installer makes). If you'd rather audit it first, clone and read `install.sh`, then run it:
+> **Ojo — `curl | bash` ejecuta un script remoto que no leíste** (el mismo *trade-off* que asume el instalador de Antigravity). Si prefieres auditarlo primero, clona, lee `install.sh` y córrelo:
 >
 > ```bash
 > git clone https://github.com/varelaia/glm-cli
 > cd glm-cli && bash install.sh
 > ```
 
-The installer is **idempotent** and does five things:
+El instalador es **idempotente** y hace 5 cosas:
 
-1. Installs Claude Code via the official native installer (skipped if already present).
-2. Ensures `~/.local/bin` is on your `PATH`.
-3. Installs `glm` and `glmf` into `~/.local/bin` (executable) — read from the local `./bin` if you cloned, otherwise fetched from the repo.
-4. Asks for your Z.ai API key and stores it at `~/.zai_api_key` (`chmod 600`). It accepts the key from an interactive prompt, or non-interactively from the `ZAI_API_KEY` environment variable.
-5. Verifies end-to-end against `https://api.z.ai/api/anthropic` (a real `glm-5.2` call expecting HTTP 200).
+1. Instala Claude Code vía el instalador nativo oficial (lo saltea si ya está).
+2. Asegura que `~/.local/bin` esté en tu `PATH` — escribe tu `.bashrc` / `.zshrc` / `.profile` según tu *shell*, **sin duplicar** líneas (detecta las que ya existen en forma `$HOME` o expandida).
+3. Instala `glm` y `glmf` en `~/.local/bin` (ejecutables) — los lee de `./bin` si clonaste, o los descarga del repo si usaste `curl|bash`.
+4. Pide tu API key de Z.ai y la guarda en `~/.zai_api_key` (`chmod 600`). Acepta la key de un *prompt* interactivo, o no interactivamente desde la variable `ZAI_API_KEY`.
+5. Verifica *end-to-end* contra `https://api.z.ai/api/anthropic` (una llamada real a `glm-5.2` esperando HTTP 200).
 
-Then start a fresh shell and run `glm`. On first launch Claude Code asks *"Use this API key?"* → **Yes** (once). Confirm the model with `/model`.
+Después, abre una *shell* nueva y corre `glm`. En el primer arranque Claude Code pregunta *"Use this API key?"* → **Yes** (una vez). Confirma el modelo con `/model`.
 
-### Get a Z.ai API key
+### Obtener una API key de Z.ai
 
-1. Create an account at **https://z.ai**.
-2. Go to **https://z.ai/manage-apikey** → *API Keys* → *Create*.
-3. Subscribe to a coding plan (e.g. **GLM Coding Pro**, monthly) at **https://z.ai/payment**.
-4. Copy the full key. It has the shape `<32 hex chars>.<suffix>` — if it doesn't, it got truncated and auth will fail.
+1. Crea cuenta en **https://z.ai**.
+2. Ve a **https://z.ai/manage-apikey** → *API Keys* → *Create*.
+3. Suscríbete a un plan de *coding* (p. ej. **GLM Coding Pro**, mensual) en **https://z.ai/payment**.
+4. Copia la key completa. Tiene la forma `<32 chars hex>.<sufijo>` — si no, se truncó y la autenticación fallará.
 
-## How your default `claude` stays safe
+## Cómo se preserva tu `claude` por defecto
 
-Each wrapper is a plain script:
+Cada *wrapper* es un script plano:
 
 ```bash
 ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
@@ -58,26 +74,28 @@ ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
 exec claude "$@"
 ```
 
-The `ANTHROPIC_*` variables are set **inline before `claude`**, so they apply only to that process — they never leak into your shell or your config. Nothing writes to `~/.claude/settings.json`. Contrast with `npx @z_ai/coding-helper`, which edits global settings and would make Z.ai your default; this project deliberately avoids that.
+Las variables `ANTHROPIC_*` se setean **inline antes de `claude`**, así que aplican solo a ese proceso — nunca filtran a tu *shell* ni a tu config. Nada escribe en `~/.claude/settings.json`. Contrasta con `npx @z_ai/coding-helper`, que edita el *settings* global y haría de Z.ai tu *default*; este proyecto lo evita deliberadamente.
 
-## Models
+## Modelos
 
-Verified available on the Z.ai Anthropic-compatible endpoint:
+Verificados disponibles en el endpoint *Anthropic-compatible* de Z.ai:
 
-| Model id | Notes |
+| Model id | Notas |
 |----------|-------|
-| `glm-5.2[1m]` | 1M-token context; reasoning by default (`glm` uses this) |
-| `glm-5-turbo` | Fast GLM-5 variant (~1.3s/turn); `glmf` uses this |
-| `glm-4.7` | Mid-tier |
-| `glm-4.6` | Mid-tier |
-| `glm-4.5-air` | Light; used as the haiku tier by `glm` |
+| `glm-5.2[1m]` | Contexto de 1M tokens; razona por defecto (`glm` usa este) |
+| `glm-5-turbo` | Variante rápida de GLM-5 (~1.3 s/turno); `glmf` usa este |
+| `glm-4.7` | Nivel medio |
+| `glm-4.6` | Nivel medio |
+| `glm-4.5-air` | Ligero; usado como *tier* haiku por `glm` |
 
-## Troubleshooting
+## Solución de problemas
 
-- **`Authentication Failed` (type 1000)** — Z.ai requires `Authorization: Bearer <key>` (the `ANTHROPIC_AUTH_TOKEN` var), **not** an `x-api-key`. The wrappers already do this; if you see it, the key is missing or truncated. Re-check at https://z.ai/manage-apikey.
-- **`API error · Retrying in Ns`** mid-session — this is the plan's **per-minute rate limit** (HTTP 429), not a config bug. Claude Code backs off and retries automatically. Pace rapid turns, switch to `glmf` for light work, or upgrade the plan.
-- **`glm: command not found` after install** — `~/.local/bin` isn't on `PATH` in the current shell. Run `source ~/.bashrc` (or start a new terminal).
-- **Key format warning** — Z.ai keys are `32 hex chars` + `.` + `suffix`. If the installer warns the key looks wrong, you likely copied only part of it.
+- **`Authentication Failed` (type 1000)** — Z.ai requiere `Authorization: Bearer <key>` (la variable `ANTHROPIC_AUTH_TOKEN`), **no** `x-api-key`. Los *wrappers* ya lo hacen; si lo ves, la key falta o está truncada. Revísala en https://z.ai/manage-apikey.
+- **`API error · Retrying in Ns`** a mitad de sesión — es el **límite de peticiones por minuto** del plan (HTTP 429), no un bug de configuración. Claude Code hace *backoff* y reintenta solo. Paceá los turnos rápidos, usa `glmf` para lo liviano, o sube de plan.
+- **`glm: command not found`** tras instalar — `~/.local/bin` no está en el `PATH` de la *shell* actual. Corre `source ~/.bashrc` (o abre una terminal nueva). En macOS con zsh, asegúrate de que esté en `~/.zshrc`.
+- **Aviso de formato de key** — las keys de Z.ai son `32 chars hex` + `.` + `sufijo`. Si el instalador avisa que se ve mal, probablemente copiaste solo una parte.
+- **`Windows is not supported by this script`** — estás en Git Bash / MSYS / Cygwin; el instalador nativo de Claude los rechaza. Usá **WSL** (o Linux/macOS).
+- **Claude Code no instala** — el instalador nativo puede reportar regiones no soportadas; revisa https://www.anthropic.com/supported-countries.
 
 ## Rollback
 
@@ -85,15 +103,24 @@ Verified available on the Z.ai Anthropic-compatible endpoint:
 rm -f ~/.zai_api_key ~/.local/bin/glm ~/.local/bin/glmf
 ```
 
-That's it — there is no global state to undo.
+Eso es todo — no hay estado global que deshacer.
 
-## Why
+## Tests
 
-Two reasons people reach for this:
+La lógica de PATH y la instalación están testeadas:
 
-1. **Model diversity / cost.** GLM-5.2 is a strong coding model with a 1M context window at a flat monthly rate, complementing a Claude Max subscription.
-2. **Sovereignty over routing.** You decide per-invocation which backend runs, from the same familiar Claude Code UX (skills, slash commands, agents, MCP all carry over unchanged — they are harness plumbing, model-agnostic).
+- `tests/test_path_idempotency.sh` — *unit*: 6 casos (no duplica la línea PATH existente en forma `$HOME` o expandida; persiste aunque el PATH esté cargado solo en la sesión).
+- `tests/e2e_one_liner.sh` — *E2E*: corre el `install.sh` aislado en un `HOME` temporal, verificando que los *wrappers* se instalan y tu `.bashrc` real no se toca.
 
-## License
+Correrlos: `bash tests/test_path_idempotency.sh && bash tests/e2e_one_liner.sh`
 
-MIT — see [LICENSE](LICENSE).
+## Por qué
+
+Dos razones para llegar a esto:
+
+1. **Diversidad de modelos / costo.** GLM-5.2 es un modelo de código fuerte con ventana de 1M a tarifa mensual plana, complementando una suscripción Claude Max.
+2. **Soberanía sobre el ruteo.** Decidís por invocación qué *backend* corre, desde el mismo UX de Claude Code (*skills*, *slash commands*, *agents*, *MCP* se heredan sin cambios — son plomería del *harness*, modelo-agnóstica).
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE).
