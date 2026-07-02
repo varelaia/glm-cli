@@ -77,11 +77,22 @@ resolve_key() {
     c_ok "Z.ai key written from \$ZAI_API_KEY"
     return 0
   fi
+  # Read the key from the controlling terminal (/dev/tty), NOT the script's
+  # stdin — under `curl|bash` stdin is the pipe that delivered the script, so a
+  # plain `read` would hit EOF and silently abort with "no key provided". If
+  # there is no controlling tty (CI / non-interactive pipe), read fails and we
+  # fall through to ask for ZAI_API_KEY instead.
   c_info "Get a key at https://z.ai/manage-apikey  (API Keys → Create)"
   printf "  Paste your Z.ai API key (input hidden): "
-  read -rs KEY
+  if ! { read -rs KEY </dev/tty; } 2>/dev/null; then
+    KEY=""
+  fi
   echo
-  [ -n "$KEY" ] || { c_err "no key provided — re-run later, or: ZAI_API_KEY=... bash install.sh"; exit 1; }
+  [ -n "$KEY" ] || {
+    c_err "no key provided (no TTY to prompt). Re-run with:"
+    c_err "  curl -fsSL https://raw.githubusercontent.com/varelaia/glm-cli/main/install.sh | ZAI_API_KEY=<key> bash"
+    exit 1
+  }
   printf '%s' "$KEY" > "$KEY_FILE"; chmod 600 "$KEY_FILE"
   c_ok "Z.ai key saved to ${KEY_FILE} (chmod 600)"
 }
@@ -145,7 +156,9 @@ main() {
   echo "    On first launch it asks \"Use this API key?\" → Yes (once). Verify with /model."
 }
 
-# Run main() only when executed, not when sourced (so tests can call ensure_path).
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+# Run main() when the script is executed (from a file OR piped via curl|bash),
+# but NOT when sourced by another script (so the tests can call ensure_path()).
+# Under `curl|bash` BASH_SOURCE[0] is empty (no file) — treat empty as "run".
+if [[ -z "${BASH_SOURCE[0]:-}" || "${BASH_SOURCE[0]:-}" == "${0}" ]]; then
   main "$@"
 fi

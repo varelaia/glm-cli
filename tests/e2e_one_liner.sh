@@ -28,12 +28,14 @@ cp "$SCRIPT_DIR/install.sh" "$tmp/install.sh"
 # 32-hex + suffix mock key so the format check passes silently (no real key used).
 mock_key="$(printf 'a%.0s' $(seq 1 32)).test"
 
-# Only HOME is isolated (PATH inherited so `command -v claude` resolves and the
-# native installer isn't re-triggered). Every write lands under $tmp — the real
-# ~/.bashrc, ~/.zai_api_key and ~/.local/bin are never touched.
-HOME="$tmp" SHELL="/bin/bash" \
+# Simulate the REAL curl|bash: feed install.sh through a PIPE (so the script's
+# stdin is the pipe that delivered it, not a tty/file — the one-liner's actual
+# runtime) and run from a dir with no ./bin beside it (forces the remote-fetch
+# branch). cwd=$tmp ⇒ SCRIPT_DIR=$tmp. A prior version ran install.sh from a
+# file, which hid the stdin-pipe caveat that breaks interactive reads.
+cat "$SCRIPT_DIR/install.sh" | ( cd "$tmp" && HOME="$tmp" SHELL="/bin/bash" \
   GLM_CLI_NO_VERIFY=1 ZAI_API_KEY="$mock_key" \
-  bash "$tmp/install.sh" >"$tmp/install.log" 2>&1
+  bash ) >"$tmp/install.log" 2>&1
 rc=$?
 
 PASS=0; FAIL=0
