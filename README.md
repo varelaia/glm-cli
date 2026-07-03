@@ -24,7 +24,9 @@ Z.ai te da una **API key** (estándar *Anthropic-compatible*) con **tarifa plana
 
 → Por eso existe `glm-cli`: correr **Claude Code** (skills, agentes, MCP — todo el UX) sobre **GLM-5.2 a tarifa plana**, usando una API key de Z.ai.
 
-> *Nota honesta: Z.ai tiene límites de uso por plan (Pro ~400 prompts/5 h, Max ~1600/5 h) — tarifa plana, **no** uso ilimitado.*
+> *Nota honesta: el plan tiene límites por ventana de **5 h** y **semanales** ([devpack/overview](https://docs.z.ai/devpack/overview)) — Lite 80/5h · 400/sem, Pro 400/5h · 2,000/sem, Max 1,600/5h · 8,000/sem. Cada prompt invoca el modelo ~15-20×, y la cuota mensual equivale a ~15-30× la tarifa. Tarifa plana, **no** uso ilimitado.*
+>
+> *Bonus del plan: incluye **Web Search MCP, Web Reader MCP y Zread MCP** (cuota mensual: Lite 100 / Pro 1,000 / Max 4,000) y **Vision MCP** (comparte el pool de 5 h) — todo utilizable desde Claude Code.*
 
 ## ✅ Plataformas soportadas
 
@@ -90,19 +92,20 @@ ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
 exec claude "$@"
 ```
 
-Las variables `ANTHROPIC_*` se setean **inline antes de `claude`**, así que aplican solo a ese proceso — nunca filtran a tu *shell* ni a tu config. Nada escribe en `~/.claude/settings.json`. Contrasta con `npx @z_ai/coding-helper`, que edita el *settings* global y haría de Z.ai tu *default*; este proyecto lo evita deliberadamente.
+Las variables `ANTHROPIC_*` se setean **inline antes de `claude`**, así que aplican solo a ese proceso — nunca filtran a tu *shell* ni a tu config. Nada escribe en `~/.claude/settings.json`. Contrasta con **dos** alternativas que sí tocan tu config global: (1) el método **oficial de Z.ai**, que pide editar `~/.claude/settings.json` con los `ANTHROPIC_DEFAULT_*_MODEL` ([scenario-example/claude](https://docs.z.ai/scenario-example/develop-tools/claude)), y (2) `npx @z_ai/coding-helper`. Ambos harían de Z.ai tu *default* permanente; este proyecto lo evita deliberadamente — por eso apunta al endpoint Anthropic-compatible `https://api.z.ai/api/anthropic` ([devpack/faq](https://docs.z.ai/devpack/faq)) en cada invocación, sin tocar estado global.
 
 ## Modelos
 
-Verificados disponibles en el endpoint *Anthropic-compatible* de Z.ai:
+El **plan GLM Coding** (el que da la tarifa plana) garantiza **3 modelos**: `GLM-5.2`, `GLM-5-Turbo` y `GLM-4.7` ([devpack/overview](https://docs.z.ai/devpack/overview)). La guía oficial de Z.ai para Claude Code configura además `glm-4.5-air` como *tier* rápido/haiku ([scenario-example/claude](https://docs.z.ai/scenario-example/develop-tools/claude)) — por eso `glm` lo usa igual. El resto del catálogo (`glm-4.6`, `glm-4.5`, etc.) es **pago por token** en la API ([pricing](https://docs.z.ai/guides/overview/pricing)), **no** incluido en la tarifa plana.
 
-| Model id | Notas |
-|----------|-------|
-| `glm-5.2[1m]` | Contexto de 1M tokens; razona por defecto (`glm` usa este) |
-| `glm-5-turbo` | Variante rápida de GLM-5 (~1.3 s/turno); `glmf` usa este |
-| `glm-4.7` | Nivel medio |
-| `glm-4.6` | Nivel medio |
-| `glm-4.5-air` | Ligero; usado como *tier* haiku por `glm` |
+| Model id | En el plan | Notas |
+|----------|:--:|-------|
+| `glm-5.2[1m]` | ✓ | Contexto de 1M; `[1m]` es el id **oficial** de Z.ai para activar 1M en Claude Code ([blog GLM-5.2](https://z.ai/blog/glm-5.2)). `glm` usa este (razona por defecto) |
+| `glm-5-turbo` | ✓ | Variante rápida de GLM-5 (~1.3 s/turno); `glmf` usa este |
+| `glm-4.7` | ✓ | Nivel medio (la guía oficial lo pone en SONNET/OPUS) |
+| `glm-4.5-air` | ✓ *(tier rápido)* | Ligero; la guía oficial lo usa como HAIKU — `glm` igual |
+
+> Fuera del plan: `glm-4.6`, `glm-4.5`, etc. responden en el endpoint pero se cobran por token. Si tu objetivo es la tarifa plana, quédate con los 4 de arriba.
 
 ## Solución de problemas
 
@@ -140,6 +143,18 @@ Dos razones para llegar a esto:
 ## 🧭 GLM con disciplina
 
 GLM-5.2 no es "mejor que Claude Opus" — es una opción sólida a tarifa plana. La diferencia operativa: modelos como Opus aplican la disciplina metodológica (leer manuales antes de operar, premortem antes de deployar, refutar claims heredados) *por tendencia*; GLM la aplica *por regla*. Por eso conviene acompañar `glm-cli` con una metodología explícita — por ejemplo la skill [`metodologia-terminal-macos`](https://github.com/varelaia/-metodologia-terminal-macos) (CPMAI + Premortem Gates + gate de arranque + `/refutar`). Sin disciplina, el modelo da igual; con disciplina, GLM rinde al nivel de la tarea.
+
+## 📚 Fuentes oficiales
+
+Lo técnico de este README se cruzó contra la doc oficial de Z.ai (jul-2026), no de memoria:
+
+- **Plan GLM Coding** — modelos incluidos, cuotas 5 h/semanales, MCPs, factor 15-30× → [docs.z.ai/devpack/overview](https://docs.z.ai/devpack/overview)
+- **Config oficial de Claude Code** (`glm-4.5-air` como haiku; método editando `settings.json`) → [docs.z.ai/scenario-example/develop-tools/claude](https://docs.z.ai/scenario-example/develop-tools/claude)
+- **Endpoint Anthropic-compatible** `/api/anthropic` → [docs.z.ai/devpack/faq](https://docs.z.ai/devpack/faq)
+- **`glm-5.2[1m]`** = id oficial para 1M de contexto en Claude Code → [z.ai/blog/glm-5.2](https://z.ai/blog/glm-5.2)
+- **Precios pay-per-token** (catálogo API fuera del plan) → [docs.z.ai/guides/overview/pricing](https://docs.z.ai/guides/overview/pricing)
+
+> ¿Por qué no usar el endpoint del [quick-start](https://docs.z.ai/guides/overview/quick-start)? Esa guía muestra el endpoint **OpenAI-compatible** (`/api/paas/v4`). glm-cli usa el **Anthropic-compatible** (`/api/anthropic`) porque **Claude Code habla el protocolo de Anthropic**, no el de OpenAI — la misma razón por la que Z.ai publica ambos.
 
 ## Licencia
 
