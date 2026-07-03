@@ -137,6 +137,10 @@ Dos razones para llegar a esto:
 1. **Diversidad de modelos / costo.** GLM-5.2 es un modelo de código fuerte con ventana de 1M a tarifa mensual plana, complementando una suscripción Claude Max.
 2. **Soberanía sobre el ruteo.** Decidís por invocación qué *backend* corre, desde el mismo UX de Claude Code (*skills*, *slash commands*, *agents*, *MCP* se heredan sin cambios — son plomería del *harness*, modelo-agnóstica).
 
+## 🧭 GLM con disciplina
+
+GLM-5.2 no es "mejor que Claude Opus" — es una opción sólida a tarifa plana. La diferencia operativa: modelos como Opus aplican la disciplina metodológica (leer manuales antes de operar, premortem antes de deployar, refutar claims heredados) *por tendencia*; GLM la aplica *por regla*. Por eso conviene acompañar `glm-cli` con una metodología explícita — por ejemplo la skill [`metodologia-terminal-macos`](https://github.com/varelaia/-metodologia-terminal-macos) (CPMAI + Premortem Gates + gate de arranque + `/refutar`). Sin disciplina, el modelo da igual; con disciplina, GLM rinde al nivel de la tarea.
+
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE).
