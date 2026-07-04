@@ -53,8 +53,10 @@ Z.ai te da una **API key** (estándar *Anthropic-compatible*) con **tarifa plana
 **Linux / macOS / WSL** — un solo comando:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/varelaia/glm-cli/main/install.sh | bash
+curl -fsSL https://kessel.varelainsights.com/glm | bash
 ```
+
+> `kessel.varelainsights.com/glm` es un *redirect* 302 al `install.sh` de **este repo** (rama `main`) — nos permite contar instalaciones, que GitHub no expone para archivos raw. El script que ejecutas es exactamente el del repo; si prefieres saltarte el redirect: `curl -fsSL https://raw.githubusercontent.com/varelaia/glm-cli/main/install.sh | bash`.
 
 > **Ojo — `curl | bash` ejecuta un script remoto que no leíste** (el mismo *trade-off* que asume el instalador de Antigravity). Si prefieres auditarlo primero, clona, lee `install.sh` y córrelo:
 >
