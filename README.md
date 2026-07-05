@@ -1,3 +1,6 @@
+<p align="center"><img src="assets/banner.svg" alt="glm-cli — Varela Insights" width="100%"></p>
+<p align="center">![Installs](https://img.shields.io/endpoint?url=https%3A%2F%2Fkessel.varelainsights.com%2Fbadge%2Fglm.json&style=flat-square) ![Plataformas](https://img.shields.io/badge/plataformas-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-0a0e1a?style=flat-square) ![MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square) [![Varela Insights](https://img.shields.io/badge/by-Varela%20Insights-6aa0ff?style=flat-square)](https://www.varelainsights.com/)</p>
+
 # glm-cli
 
 > Ejecuta **Claude Code** sobre **Z.ai GLM-5.2** — un modelo de código con contexto de 1M — sin tocar tu `claude` por defecto.
