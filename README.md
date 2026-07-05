@@ -1,5 +1,10 @@
 <p align="center"><img src="assets/banner.svg" alt="glm-cli — Varela Insights" width="100%"></p>
-<p align="center">![Installs](https://img.shields.io/endpoint?url=https%3A%2F%2Fkessel.varelainsights.com%2Fbadge%2Fglm.json&style=flat-square) ![Plataformas](https://img.shields.io/badge/plataformas-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-0a0e1a?style=flat-square) ![MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square) [![Varela Insights](https://img.shields.io/badge/by-Varela%20Insights-6aa0ff?style=flat-square)](https://www.varelainsights.com/)</p>
+<p align="center">
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fkessel.varelainsights.com%2Fbadge%2Fglm.json&style=flat-square" alt="Installs">
+  <img src="https://img.shields.io/badge/plataformas-Linux%20%C2%B7%20macOS%20%C2%B7%20Windows-0a0e1a?style=flat-square" alt="Plataformas">
+  <img src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square" alt="MIT">
+  <a href="https://www.varelainsights.com/"><img src="https://img.shields.io/badge/by-Varela%20Insights-6aa0ff?style=flat-square" alt="Varela Insights"></a>
+</p>
 
 # glm-cli
 
