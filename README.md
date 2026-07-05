@@ -10,6 +10,10 @@
 | `glmf`  | `glm-5-turbo` (*thinking* OFF) | Tareas rápidas — edits, *lookups*, un solo prompt |
 | `claude`| *(sin cambios)* | Tu *default* — Anthropic / Max |
 
+## TL;DR (English)
+
+**glm-cli** runs **Claude Code on Z.ai's GLM models** (flat-rate, 1M-token context) as an alternate backend **without touching your default `claude` setup**: the `glm` and `glmf` shell wrappers point one single invocation at Z.ai's Anthropic-compatible endpoint — your global `settings.json` is never modified, so the Anthropic/Max plan and GLM coexist in the same shell. Install: `curl -fsSL https://kessel.varelainsights.com/glm | bash`. MIT license, maintained by [Varela Insights](https://www.varelainsights.com/) (Monterrey, Mexico).
+
 ## 💡 El diferenciador: API key + tarifa plana
 
 Z.ai te da una **API key** (estándar *Anthropic-compatible*) con **tarifa plana mensual** (Lite $18 / Pro $72 / Max $160) — portable a *cualquier* cliente, incluido este Claude Code.
