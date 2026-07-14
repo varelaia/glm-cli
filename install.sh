@@ -130,7 +130,69 @@ main() {
     c_warn "key doesn't look like a full Z.ai key (expect 32 hex chars + '.' + suffix) — auth may fail"
   fi
 
-  # 6) end-to-end verify (skippable for tests/CI via GLM_CLI_NO_VERIFY=1)
+  # 6) Check ~/.claude/settings.json for conflicts that break glm.
+  #    Two things there silently break glm:
+  #    a) "model": "<something>" — overrides the ANTHROPIC_DEFAULT_*_MODEL vars
+  #       that the wrapper sets inline. Z.ai rejects non-GLM model ids with 400.
+  #    b) Hooks pointing to nonexistent scripts — UserPromptSubmit hooks run on
+  #       every prompt and block it if the script is missing.
+  check_claude_settings() {
+    local settings="${HOME}/.claude/settings.json"
+    [ -f "$settings" ] || return 0  # no settings = no problem
+
+    # Only warn if the user has python3 or jq — we try python3 first (more common
+    # alongside Claude Code), then jq, then skip silently if neither is available.
+    local has_parser=""
+    command -v python3 >/dev/null 2>&1 && has_parser="python3"
+    [ -z "$has_parser" ] && command -v jq >/dev/null 2>&1 && has_parser="jq"
+    [ -z "$has_parser" ] && return 0
+
+    # a) Model override
+    local model=""
+    if [ "$has_parser" = "python3" ]; then
+      model="$(python3 -c "import json,sys; d=json.load(open('$settings')); print(d.get('model',''))" 2>/dev/null || echo "")"
+    else
+      model="$(jq -r '.model // ""' "$settings" 2>/dev/null || echo "")"
+    fi
+    if [ -n "$model" ]; then
+      c_warn "\"model\": \"${model}\" in ${settings}"
+      c_warn "  This overrides the glm wrapper's ANTHROPIC_DEFAULT_*_MODEL vars."
+      c_warn "  glm will fail with 'Unknown Model' (HTTP 400). Fix:"
+      c_warn "    Remove the \"model\" line from settings.json (or use /model inside glm)."
+    fi
+
+    # b) Hooks referencing missing scripts
+    local hook_count broken=0
+    if [ "$has_parser" = "python3" ]; then
+      hook_count="$(python3 -c "
+import json,os,sys
+d=json.load(open('$settings'))
+hooks=d.get('hooks',{})
+broken=0
+for event,matchers in hooks.items():
+  for m in matchers:
+    for h in m.get('hooks',[]):
+      cmd=h.get('command','')
+      # extract the script path (first arg after python3/bash/etc)
+      parts=cmd.split()
+      for p in parts:
+        if p.startswith('/') and not os.path.exists(p):
+          broken+=1
+          break
+print(broken)
+" 2>/dev/null || echo "0")"
+    else
+      hook_count=0
+    fi
+    if [ "$hook_count" -gt 0 ] 2>/dev/null; then
+      c_warn "${hook_count} hook(s) in settings.json reference scripts that don't exist."
+      c_warn "  These hooks run on every prompt and will BLOCK glm (and claude)."
+      c_warn "  Fix: remove the broken hooks from ${settings}, or restore the missing files."
+    fi
+  }
+  check_claude_settings
+
+  # 7) end-to-end verify (skippable for tests/CI via GLM_CLI_NO_VERIFY=1)
   if [ "${GLM_CLI_NO_VERIFY:-0}" = "1" ]; then
     c_warn "GLM_CLI_NO_VERIFY=1 — skipping Z.ai endpoint check."
   else
