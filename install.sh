@@ -130,10 +130,12 @@ main() {
     c_warn "key doesn't look like a full Z.ai key (expect 32 hex chars + '.' + suffix) — auth may fail"
   fi
 
-  # 6) Check ~/.claude/settings.json for conflicts that break glm.
-  #    Two things there silently break glm:
-  #    a) "model": "<something>" — overrides the ANTHROPIC_DEFAULT_*_MODEL vars
-  #       that the wrapper sets inline. Z.ai rejects non-GLM model ids with 400.
+  # 6) Check ~/.claude/settings.json for conflicts.
+  #    a) "model": "<literal id>" — used to bypass the ANTHROPIC_DEFAULT_*_MODEL
+  #       aliases and silently misroute the session (Z.ai may serve a different
+  #       model with NO error — verified 2026-07-20; the old loud HTTP 400 no
+  #       longer happens). The wrappers now pin ANTHROPIC_MODEL explicitly, which
+  #       wins over settings.json, so this is informational rather than fatal.
   #    b) Hooks pointing to nonexistent scripts — UserPromptSubmit hooks run on
   #       every prompt and block it if the script is missing.
   check_claude_settings() {
@@ -156,9 +158,9 @@ main() {
     fi
     if [ -n "$model" ]; then
       c_warn "\"model\": \"${model}\" in ${settings}"
-      c_warn "  This overrides the glm wrapper's ANTHROPIC_DEFAULT_*_MODEL vars."
-      c_warn "  glm will fail with 'Unknown Model' (HTTP 400). Fix:"
-      c_warn "    Remove the \"model\" line from settings.json (or use /model inside glm)."
+      c_warn "  The glm/glmf wrappers pin ANTHROPIC_MODEL explicitly, so this no"
+      c_warn "  longer misroutes them. To pick a different GLM model per run use:"
+      c_warn "    GLM_MODEL=<model-id> glm"
     fi
 
     # b) Hooks referencing missing scripts

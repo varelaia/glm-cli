@@ -12,8 +12,12 @@ if [ -z "$ZAI_KEY" ]; then
   exit 1
 fi
 
+# ANTHROPIC_MODEL pinned for the same reason as in `glm`: a literal "model" id
+# in ~/.claude/settings.json silently bypasses the DEFAULT_* aliases.
+# Override for one run with GLM_MODEL: GLM_MODEL=glm-4.7 glmf
 ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
 ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
+ANTHROPIC_MODEL="${GLM_MODEL:-glm-5-turbo}" \
 ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5-turbo" \
 ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5-turbo" \
 ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-5-turbo" \

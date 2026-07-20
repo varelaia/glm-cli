@@ -17,8 +17,14 @@ if [ -z "$ZAI_KEY" ]; then
   exit 1
 fi
 
+# ANTHROPIC_MODEL is pinned explicitly: a literal "model" id in the host's
+# ~/.claude/settings.json (written by /model) bypasses the DEFAULT_* aliases
+# and silently routes the session to a non-GLM model id — Z.ai may serve a
+# different model without any error. Pinning the env var wins over settings.json.
+# Override the model for one run with GLM_MODEL: GLM_MODEL=glm-4.7 glm
 ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
 ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
+ANTHROPIC_MODEL="${GLM_MODEL:-glm-5.2[1m]}" \
 ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
 ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2[1m]" \
 ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air" \
