@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# glm — Claude Code on Z.ai GLM-5.2 (1M-token context, thinking ON).
+# glm — Claude Code on Z.ai GLM-4.7 (200K context, thinking ON).
 #
 # The ANTHROPIC_* exports below are scoped to THIS invocation only, so your
 # default `claude` command (Anthropic / Max plan) is never modified. Think of
-# glm as: "claude, but routed to Z.ai GLM-5.2 for this one run."
+# glm as: "claude, but routed to Z.ai GLM-4.7 for this one run."
 #
 # Rollback: rm -f ~/.zai_api_key ~/.local/bin/glm ~/.local/bin/glmf
 set -euo pipefail
@@ -21,13 +21,13 @@ fi
 # ~/.claude/settings.json (written by /model) bypasses the DEFAULT_* aliases
 # and silently routes the session to a non-GLM model id — Z.ai may serve a
 # different model without any error. Pinning the env var wins over settings.json.
-# Override the model for one run with GLM_MODEL: GLM_MODEL=glm-4.7 glm
+# Override the model for one run with GLM_MODEL: GLM_MODEL=glm-5.2[1m] glm
 ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
 ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
-ANTHROPIC_MODEL="${GLM_MODEL:-glm-5.2[1m]}" \
-ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
-ANTHROPIC_DEFAULT_SONNET_MODEL="glm-5.2[1m]" \
+ANTHROPIC_MODEL="${GLM_MODEL:-glm-4.7}" \
+ANTHROPIC_DEFAULT_OPUS_MODEL="glm-4.7" \
+ANTHROPIC_DEFAULT_SONNET_MODEL="glm-4.7" \
 ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air" \
-CLAUDE_CODE_AUTO_COMPACT_WINDOW="1000000" \
+CLAUDE_CODE_AUTO_COMPACT_WINDOW="200000" \
 API_TIMEOUT_MS="3000000" \
 exec claude "$@"

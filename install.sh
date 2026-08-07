@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# glm-cli installer — Claude Code + Z.ai GLM-5.2 wrappers.
+# glm-cli installer — Claude Code + Z.ai GLM-4.7 wrappers.
 # Idempotent. Does NOT touch Claude's global settings.json, so your default
 # `claude` (Anthropic / Max plan) stays untouched. glm/glmf only override env
 # vars for the duration of their own invocation.
@@ -98,7 +98,7 @@ resolve_key() {
 }
 
 main() {
-  echo "▸ glm-cli installer — Claude Code + Z.ai GLM-5.2"
+  echo "▸ glm-cli installer — Claude Code + Z.ai GLM-4.7"
 
   # 1) dependencies
   command -v curl >/dev/null 2>&1 || { c_err "curl is required (install it first)"; exit 1; }
@@ -198,14 +198,14 @@ print(broken)
   if [ "${GLM_CLI_NO_VERIFY:-0}" = "1" ]; then
     c_warn "GLM_CLI_NO_VERIFY=1 — skipping Z.ai endpoint check."
   else
-    c_info "Verifying Z.ai endpoint (glm-5.2)…"
+    c_info "Verifying Z.ai endpoint (glm-4.7)…"
     local http
     http=$(curl -s -o /dev/null -w "%{http_code}" "$ZAI_BASE_URL/v1/messages" \
       -H "Authorization: Bearer $key" \
       -H "anthropic-version: 2023-06-01" \
-      -d '{"model":"glm-5.2","max_tokens":16,"messages":[{"role":"user","content":"ping"}]}' || true)
+      -d '{"model":"glm-4.7","max_tokens":16,"messages":[{"role":"user","content":"ping"}]}' || true)
     case "$http" in
-      200) c_ok "Z.ai GLM-5.2 reachable (HTTP 200) — you're ready." ;;
+      200) c_ok "Z.ai GLM-4.7 reachable (HTTP 200) — you're ready." ;;
       401|403) c_err "auth failed (HTTP ${http}). Key may be truncated — check https://z.ai/manage-apikey"; exit 1 ;;
       429) c_warn "rate-limited (HTTP 429) during verify — config is correct; retry in a minute." ;;
       *) c_warn "unexpected HTTP ${http} from Z.ai — config saved; check network/key." ;;
@@ -214,7 +214,7 @@ print(broken)
 
   echo
   echo "  ▸ Done. Start a fresh shell (or 'source ~/.bashrc'), then:"
-  echo "      glm      # Claude Code on GLM-5.2  (1M ctx, thinking ON) — heavy work"
+  echo "      glm      # Claude Code on GLM-4.7  (200K ctx, thinking ON) — heavy work"
   echo "      glmf     # Claude Code on GLM-5-turbo (fast, thinking off) — quick tasks"
   echo "      claude   # unchanged — still your default (Anthropic)"
   echo "    On first launch it asks \"Use this API key?\" → Yes (once). Verify with /model."

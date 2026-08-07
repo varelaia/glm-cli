@@ -8,13 +8,13 @@
 
 # glm-cli
 
-> Ejecuta **Claude Code** sobre **Z.ai GLM-5.2** — un modelo de código con contexto de 1M — sin tocar tu `claude` por defecto.
+> Ejecuta **Claude Code** sobre **Z.ai GLM-4.7** — un modelo de código fuerte en uso de herramientas — sin tocar tu `claude` por defecto.
 
 `glm` y `glmf` son dos *wrappers* livianos que lanzan el binario real de Claude Code con variables de entorno acotadas a esa única invocación, apuntándolo al endpoint *Anthropic-compatible* de Z.ai. Tu comando `claude` (API Anthropic / plan Max) **nunca se modifica**: no se toca el `settings.json` global, así que ambos mundos coexisten en la misma shell.
 
 | Comando | Modelo | Cuándo |
 |---------|-------|--------|
-| `glm`   | `glm-5.2[1m]` (ctx 1M, *thinking* ON) | Trabajo duro — debug, multi-paso, contexto largo |
+| `glm`   | `glm-4.7` (ctx 200K, *thinking* ON) | Trabajo duro — debug, multi-paso, uso de herramientas |
 | `glmf`  | `glm-5-turbo` (*thinking* OFF) | Tareas rápidas — edits, *lookups*, un solo prompt |
 | `claude`| *(sin cambios)* | Tu *default* — Anthropic / Max |
 
@@ -34,7 +34,7 @@ Z.ai te da una **API key** (estándar *Anthropic-compatible*) con **tarifa plana
 | **Claude (Anthropic)** | ✓ (Pro / Max) | ✗ — la API es solo pago por token |
 | **Codex (OpenAI)** | ✓ (ChatGPT) | ✗ — la API es solo pago por token |
 
-→ Por eso existe `glm-cli`: correr **Claude Code** (skills, agentes, MCP — todo el UX) sobre **GLM-5.2 a tarifa plana**, usando una API key de Z.ai.
+→ Por eso existe `glm-cli`: correr **Claude Code** (skills, agentes, MCP — todo el UX) sobre **GLM a tarifa plana**, usando una API key de Z.ai.
 
 > *Nota honesta: el plan tiene límites por ventana de **5 h** y **semanales** ([devpack/overview](https://docs.z.ai/devpack/overview)) — Lite 80/5h · 400/sem, Pro 400/5h · 2,000/sem, Max 1,600/5h · 8,000/sem. Cada prompt invoca el modelo ~15-20×, y la cuota mensual equivale a ~15-30× la tarifa. Tarifa plana, **no** uso ilimitado.*
 >
@@ -83,7 +83,7 @@ El instalador es **idempotente** y hace 5 cosas:
 2. Asegura que `~/.local/bin` esté en tu `PATH` — escribe tu `.bashrc` / `.zshrc` / `.profile` según tu *shell*, **sin duplicar** líneas (detecta las que ya existen en forma `$HOME` o expandida).
 3. Instala `glm` y `glmf` en `~/.local/bin` (ejecutables) — los lee de `./bin` si clonaste, o los descarga del repo si usaste `curl|bash`.
 4. Pide tu API key de Z.ai y la guarda en `~/.zai_api_key` (`chmod 600`). Acepta la key de un *prompt* interactivo, o no interactivamente desde la variable `ZAI_API_KEY`.
-5. Verifica *end-to-end* contra `https://api.z.ai/api/anthropic` (una llamada real a `glm-5.2` esperando HTTP 200).
+5. Verifica *end-to-end* contra `https://api.z.ai/api/anthropic` (una llamada real a `glm-4.7` esperando HTTP 200).
 
 Después, abre una *shell* nueva y corre `glm`. En el primer arranque Claude Code pregunta *"Use this API key?"* → **Yes** (una vez). Confirma el modelo con `/model`.
 
@@ -101,7 +101,7 @@ Cada *wrapper* es un script plano:
 ```bash
 ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic" \
 ANTHROPIC_AUTH_TOKEN="$ZAI_KEY" \
-ANTHROPIC_DEFAULT_OPUS_MODEL="glm-5.2[1m]" \
+ANTHROPIC_DEFAULT_OPUS_MODEL="glm-4.7" \
 ...
 exec claude "$@"
 ```
@@ -114,9 +114,9 @@ El **plan GLM Coding** (el que da la tarifa plana) garantiza **3 modelos**: `GLM
 
 | Model id | En el plan | Notas |
 |----------|:--:|-------|
-| `glm-5.2[1m]` | ✓ | Contexto de 1M; `[1m]` es el id **oficial** de Z.ai para activar 1M en Claude Code ([blog GLM-5.2](https://z.ai/blog/glm-5.2)). `glm` usa este (razona por defecto) |
+| `glm-5.2[1m]` | ✓ | Contexto de 1M; `[1m]` es el id **oficial** de Z.ai para activar 1M en Claude Code ([blog GLM-5.2](https://z.ai/blog/glm-5.2)). Disponible con `GLM_MODEL=glm-5.2[1m] glm` |
 | `glm-5-turbo` | ✓ | Variante rápida de GLM-5 (~1.3 s/turno); `glmf` usa este |
-| `glm-4.7` | ✓ | Nivel medio (la guía oficial lo pone en SONNET/OPUS) |
+| `glm-4.7` | ✓ | Contexto de 200K. **`glm` usa este por defecto** desde 2026-08-07 |
 | `glm-4.5-air` | ✓ *(tier rápido)* | Ligero; la guía oficial lo usa como HAIKU — `glm` igual |
 
 > Fuera del plan: `glm-4.6`, `glm-4.5`, etc. responden en el endpoint pero se cobran por token. Si tu objetivo es la tarifa plana, quédate con los 4 de arriba.
@@ -151,12 +151,12 @@ Correrlos: `bash tests/test_path_idempotency.sh && bash tests/e2e_one_liner.sh`
 
 Dos razones para llegar a esto:
 
-1. **Diversidad de modelos / costo.** GLM-5.2 es un modelo de código fuerte con ventana de 1M a tarifa mensual plana, complementando una suscripción Claude Max.
+1. **Diversidad de modelos / costo.** GLM ofrece modelos de código fuertes a tarifa mensual plana, complementando una suscripción Claude Max. El plan cubre `glm-4.7`, `glm-5.2` y `glm-5-turbo`; `glm` usa **4.7** por defecto y los demás quedan a un `GLM_MODEL=` de distancia.
 2. **Soberanía sobre el ruteo.** Decidís por invocación qué *backend* corre, desde el mismo UX de Claude Code (*skills*, *slash commands*, *agents*, *MCP* se heredan sin cambios — son plomería del *harness*, modelo-agnóstica).
 
 ## 🧭 GLM con disciplina
 
-GLM-5.2 no es "mejor que Claude Opus" — es una opción sólida a tarifa plana. La diferencia operativa: modelos como Opus aplican la disciplina metodológica (leer manuales antes de operar, premortem antes de deployar, refutar claims heredados) *por tendencia*; GLM la aplica *por regla*. Por eso conviene acompañar `glm-cli` con una metodología explícita — por ejemplo la skill [`metodologia-terminal-macos`](https://github.com/varelaia/-metodologia-terminal-macos) (CPMAI + Premortem Gates + gate de arranque + `/refutar`). Sin disciplina, el modelo da igual; con disciplina, GLM rinde al nivel de la tarea.
+GLM no es "mejor que Claude Opus" — es una opción sólida a tarifa plana. La diferencia operativa: modelos como Opus aplican la disciplina metodológica (leer manuales antes de operar, premortem antes de deployar, refutar claims heredados) *por tendencia*; GLM la aplica *por regla*. Por eso conviene acompañar `glm-cli` con una metodología explícita — por ejemplo la skill [`metodologia-terminal-macos`](https://github.com/varelaia/-metodologia-terminal-macos) (CPMAI + Premortem Gates + gate de arranque + `/refutar`). Sin disciplina, el modelo da igual; con disciplina, GLM rinde al nivel de la tarea.
 
 > **El patrón concreto a vigilar** — en uso intensivo, GLM-5.2 muestra sesgo hacia la acción: *lanza* (corre tools, propone un plan, ejecuta) **antes de confirmar que entendió el request**, sobre todo si es ambiguo. No es un defecto; es disposición. El antídoto eficaz **no** es una regla más en `CLAUDE.md` (el modelo muta alrededor de ella); es **estructura**: pedir confirmación explícita antes de acciones irreversibles y, si lo quieres, un hook `PreToolUse` que exija texto antes del primer lote de tools. Jerarquía honesta: **estructura > regla**.
 
